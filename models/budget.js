@@ -7,6 +7,10 @@ module.exports = (sequelize, DataTypes) => {
       budget.belongsTo(models.income, {
         foreignKey: 'incomeID'
       });
+      budget.hasMany(models.expense, {
+        foreignKey: 'budgetID',
+        onDelete: 'CASCADE'
+      });
     }
   }
 
