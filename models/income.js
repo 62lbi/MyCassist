@@ -4,7 +4,11 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class income extends Model {
     static associate(models) {
-      // relations will be added later
+      income.hasOne(models.budget, {
+        foreignKey: 'incomeID',
+        as: 'allocation',
+        onDelete: 'CASCADE'
+      });
     }
   }
 
