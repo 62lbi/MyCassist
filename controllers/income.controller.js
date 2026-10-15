@@ -112,3 +112,78 @@ exports.addIncome = async (request, response) => {
         });
     }
 };
+
+
+exports.updateIncome = async (req, res) => {
+    try {
+        // Get the income ID from the URL
+        const id = req.params.id;
+
+        // Get the new values from the request body
+        const { month, year, budget } = req.body;
+
+        // Check whether the income record exists
+        const income = await incomeModel.findByPk(id);
+
+        if (!income) {
+            return res.status(404).json({
+                message: "Income tidak ditemukan"
+            });
+        }
+
+        // Check whether the month is valid
+        const validMonths = [
+            "January", "February", "March", "April",
+            "May", "June", "July", "August",
+            "September", "October", "November", "December"
+        ];
+
+        if (!validMonths.includes(month)) {
+            return res.status(400).json({
+                message: "Month invalid, pilih bulan dari january hingga december."
+            });
+        }
+
+        // Check whether year and budget are positive integers
+        if (!Number.isInteger(year) || year < 1 ||
+            !Number.isInteger(budget) || budget < 1) {
+            return res.status(400).json({
+                message: "Year dan budget harus bilangan positif/bulat"
+            });
+        }
+
+        // Prevent another record from using the same month and year
+        const duplicate = await incomeModel.findOne({
+            where: {
+                month: month,
+                year: year
+            }
+        });
+
+        if (duplicate && duplicate.id !== income.id) {
+            return res.status(409).json({
+                message: "Income untuk month ini dan year sudah ada, gunakan bulan lain yang tidak sama"
+            });
+        }
+
+        // Save the new values to the database
+        await income.update({
+            month: month,
+            year: year,
+            budget: budget
+        });
+
+        // Return the updated record
+        return res.status(200).json({
+            message: "Income berhasil diubah",
+            data: income
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+};
