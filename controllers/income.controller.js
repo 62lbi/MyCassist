@@ -5,7 +5,7 @@ const incomeModel = require(`../models`).income //i dont know if this will cause
 /*creating function to get all income */
 exports.getAllIncome = async (request, response) => {
     try {
-        //get all data in the database..
+        /* get all data in the database..*/
         const income = await incomeModel.findAll()
         return response.status(200).json({
             status: true,
@@ -14,8 +14,101 @@ exports.getAllIncome = async (request, response) => {
         })
     } catch(error) {
         return response.status(500).json({
-            success: false,
+            status: false,
             message: `Terjadi kesalahan server, coba ulang kembali.`
         })
     }
-}  
+}
+
+/*creating function to store income in the database */
+exports.addIncome = async (request, response) => {
+    try {
+        // Get data from the request body
+        const { month, year, budget } = request.body;
+
+        // Define the valid months
+        const validMonths = [
+            'January', 'February', 'March', 'April',
+            'May', 'June', 'July', 'August',
+            'September', 'October', 'November', 'December'
+        ];
+
+        // Validate the month
+        if (!month || !validMonths.includes(month)) {
+            return response.status(400).json({
+                status: false,
+                message: 'Month tidak valid. Gunakan January sampai December.'
+            });
+        }
+
+        // Validate the year
+        if (
+            year === undefined ||
+            year === null ||
+            !Number.isInteger(year) ||
+            year < 1
+        ) {
+            return response.status(400).json({
+                status: false,
+                message: 'Year harus berupa bilangan bulat positif.'
+            });
+        }
+
+        // Validate the budget
+        if (
+            budget === undefined ||
+            budget === null ||
+            !Number.isInteger(budget) ||
+            budget <= 0
+        ) {
+            return response.status(400).json({
+                status: false,
+                message: 'Budget harus berupa bilangan bulat positif.'
+            });
+        }
+
+        // Check whether income for this month and year already exists
+        const existingIncome = await incomeModel.findOne({
+            where: {
+                month: month,
+                year: year
+            }
+        });
+
+        if (existingIncome) {
+            return response.status(400).json({
+                status: false,
+                message: 'Income untuk bulan dan tahun tersebut sudah ada.'
+            });
+        }
+
+        // Insert the new income into the database
+        const result = await incomeModel.create({
+            month: month,
+            year: year,
+            budget: budget
+        });
+
+        // Return a response if insertion succeeds
+        return response.status(201).json({
+            status: true,
+            message: 'Income berhasil ditambahkan',
+            data: {
+                id: result.id,
+                month: result.month,
+                year: result.year,
+                budget: result.budget
+            }
+        });
+
+    } catch (error) {
+        // Display the error in the server terminal
+        console.error(error);
+
+        // Return a server error response
+        return response.status(500).json({
+            status: false,
+            message: 'Terjadi kesalahan pada server.'
+        });
+    }
+};

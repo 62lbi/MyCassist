@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true
     },
+    year: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    }, // added this new row for income.controller.js in 15/10/2026
     budget: {
       type: DataTypes.INTEGER,
       allowNull: false

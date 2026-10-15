@@ -12,5 +12,6 @@ const incomeController = require(`../controllers/income.controller`)
 
 /*create route to GET all data of income.*/
 app.get("/", incomeController.getAllIncome)
+app.post("/", incomeController.addIncome)
 
 module.exports = app
