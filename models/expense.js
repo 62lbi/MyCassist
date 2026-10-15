@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     sequelize,
-    modelName: 'expense',
+    modelName: 'expense', //for future me, this is something new that i learnt.. we can refer the database to expense than expenses (standard)
     tableName: 'expense'
   });
 

@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     }
   }, {
-    sequelize,
+    sequelize, //for future me, this is something new that i learnt.. we can refer the database to budget than budgets (standard)
     modelName: 'budget',
     tableName: 'budget'
   });

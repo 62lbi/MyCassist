@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       income.hasOne(models.budget, {
         foreignKey: 'incomeID',
-        as: 'allocation',
+        as: 'allocation', //for future me, this is something new that i learnt, allocation?
         onDelete: 'CASCADE'
       });
     }
@@ -33,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     sequelize,
-    modelName: 'income',
+    modelName: 'income', //for future me, this is something new that i learnt.. we can refer the database to income than incomes (standard)
     tableName: 'income'
   });
 
