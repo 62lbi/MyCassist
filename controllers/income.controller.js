@@ -140,7 +140,7 @@ exports.updateIncome = async (req, res) => {
 
         if (!validMonths.includes(month)) {
             return res.status(400).json({
-                message: "Month invalid, pilih bulan dari january hingga december."
+                message: "Month invalid, pilih bulan dari january hingga december"
             });
         }
 
@@ -187,3 +187,37 @@ exports.updateIncome = async (req, res) => {
         });
     }
 };
+
+
+exports.deleteIncome = async (req, res) => {
+    try {
+        // Get the income ID from the URL
+        const id = req.params.id;
+
+        // Find the income record
+        const income = await incomeModel.findByPk(id);
+
+        // Return an error if the record does not exist
+        if (!income) {
+            return res.status(404).json({
+                message: "Income tidak ditemukan"
+            });
+        }
+
+        // Delete the record from the database
+        await income.destroy();
+
+        // Confirm that the record was deleted
+        return res.status(200).json({
+            message: "Income berhasil di hapus"
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+};
+

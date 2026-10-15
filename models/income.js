@@ -1,3 +1,4 @@
+
 'use strict';
 const { Model } = require('sequelize');
 
@@ -6,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       income.hasOne(models.budget, {
         foreignKey: 'incomeID',
-        as: 'allocation', //for future me, this is something new that i learnt, allocation?
+        as: 'allocation', // Alias for accessing the related budget
         onDelete: 'CASCADE'
       });
     }
@@ -24,21 +25,28 @@ module.exports = (sequelize, DataTypes) => {
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
       ),
-      allowNull: false,
-      unique: true
+      allowNull: false
     },
     year: {
       type: DataTypes.INTEGER,
       allowNull: false
-    }, // added this new row for income.controller.js in 15/10/2026
+    },
     budget: {
       type: DataTypes.INTEGER,
       allowNull: false
     }
   }, {
     sequelize,
-    modelName: 'income', //for future me, this is something new that i learnt.. we can refer the database to income than incomes (standard)
-    tableName: 'income'
+    modelName: 'income',
+    tableName: 'income',
+
+    // Month and year together must be unique
+    indexes: [
+      {
+        unique: true,
+        fields: ['month', 'year']
+      }
+    ]
   });
 
   return income;

@@ -14,5 +14,6 @@ const incomeController = require(`../controllers/income.controller`)
 app.get("/", incomeController.getAllIncome)
 app.post("/", incomeController.addIncome)
 app.put("/:id", incomeController.updateIncome)
+app.delete("/:id", incomeController.deleteIncome)
 
 module.exports = app
