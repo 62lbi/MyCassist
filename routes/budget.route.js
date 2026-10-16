@@ -13,4 +13,7 @@ const budgetController = require(`../controllers/budget.controller`)
 /*route to get all budget */
 app.get("/", budgetController.getAllBudget)
 
+/*route to get budget by id */
+app.get("/:id", budgetController.getBudgetById)
+
 module.exports = app
