@@ -12,5 +12,6 @@ const expenseController = require(`../controllers/expense.controller`)
 
 /*route to get all data of expense */
 app.get("/", expenseController.getAllExpense)
+app.post("/", expenseController.addExpense)
 
 module.exports = app
