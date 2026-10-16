@@ -15,9 +15,11 @@ app.use(cors())
 
 /** define all routes */
 const incomeRoute = require(`./routes/income.route`)
+const expenseRoute = require(`./routes/expense.route`)
 
 /** define prefix for each routes */
 app.use(`/income`, incomeRoute)
+app.use(`/expense`, expenseRoute)
 
 /** run the server based on defined port */
 app.listen(PORT, () => {
