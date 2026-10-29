@@ -72,7 +72,7 @@ exports.addIncome = async (request, response) => {
         if (existingIncome) {
             return response.status(400).json({
                 status: false,
-                message: 'Income untuk bulan dan tahun ini sudah terdaftar.'
+                message: 'Income untuk bulan dan tahun ini sudah terdaftar'
             });
         }
 
@@ -88,6 +88,99 @@ exports.addIncome = async (request, response) => {
             status: true,
             message: 'Income berhasil ditambahkan',
             data: newIncome
+        });
+
+    } catch (error) {
+        // Handle unexpected server or database errors.
+        return response.status(500).json({
+            status: false,
+            message: error.message
+        });
+    }
+};
+
+//function of updateIncome
+exports.updateIncome = async (request, response) => {
+    try {
+        // Get the incomeID from the URL.
+        const { id } = request.params;
+
+        // Get the updated income data from the request body.
+        const { month, year, budget } = request.body;
+
+        // Check whether all required fields are provided.
+        if (!month || !year || budget == null) {
+            return response.status(400).json({
+                status: false,
+                message: 'Bulan, tahun, dan jumlah pemasukan wajib diisi'
+            });
+        }
+
+        // Check whether the month is valid.
+        const validMonths = [
+            'January', 'February', 'March', 'April',
+            'May', 'June', 'July', 'August',
+            'September', 'October', 'November', 'December'
+        ];
+
+        if (!validMonths.includes(month)) {
+            return response.status(400).json({
+                status: false,
+                message: 'Bulan tidak valid'
+            });
+        }
+
+        // Check whether year and budget are positive integers.
+        if (
+            !Number.isInteger(Number(year)) ||
+            Number(year) <= 0 ||
+            !Number.isInteger(Number(budget)) ||
+            Number(budget) <= 0
+        ) {
+            return response.status(400).json({
+                status: false,
+                message: 'Tahun dan jumlah pemasukan harus berupa bilangan bulat positif'
+            });
+        }
+
+        // Find the income record that will be updated.
+        const income = await incomeModel.findByPk(id);
+
+        // Return an error if the income record does not exist.
+        if (!income) {
+            return response.status(404).json({
+                status: false,
+                message: 'Data income tidak ditemukan'
+            });
+        }
+
+        // Check whether another income already uses the new month and year.
+        const existingIncome = await incomeModel.findOne({
+            where: {
+                month: month,
+                year: Number(year)
+            }
+        });
+
+        if (existingIncome && existingIncome.incomeID !== income.incomeID) {
+            return response.status(400).json({
+                status: false,
+                message: 'Income untuk bulan dan tahun ini sudah terdaftar'
+            });
+        }
+
+        // Update the income record.
+        await income.update({
+            month: month,
+            year: Number(year),
+            budget: Number(budget)
+        });
+
+        // Return the updated income record.
+        return response.status(200).json({
+            status: true,
+            message: 'Income berhasil diubah',
+            data: income
         });
 
     } catch (error) {
