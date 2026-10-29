@@ -158,3 +158,65 @@ exports.addBudget = async (request, response) => {
         });
     }
 };
+
+// Function to getAllBudget
+exports.getAllBudget = async (request, response) => {
+    try {
+        // 1. Retrieve all budget records and their related income.
+        const budgets = await budgetModel.findAll({
+            include: [{
+                model: incomeModel,
+                as: 'income'
+            }]
+        });
+
+        // 2. Convert each budget record into the response format.
+        const data = budgets.map((item) => {
+            // Get the total income linked to this budget.
+            const totalIncome = item.income.budget;
+
+            // Return the budget details and calculated amounts.
+            return {
+                budgetID: item.budgetID,
+                incomeID: item.incomeID,
+                month: item.income.month,
+                year: item.income.year,
+                budget: totalIncome,
+
+                entertainment: {
+                    percentage: item.entertainment,
+                    amount: Math.round(
+                        totalIncome * item.entertainment / 100
+                    )
+                },
+
+                foodNeeds: {
+                    percentage: item.foodNeeds,
+                    amount: Math.round(
+                        totalIncome * item.foodNeeds / 100
+                    )
+                },
+
+                miscellaneous: {
+                    percentage: item.miscellaneous,
+                    amount: Math.round(
+                        totalIncome * item.miscellaneous / 100
+                    )
+                }
+            };
+        });
+
+        // 3. Return all budget allocations.
+        return response.status(200).json({
+            status: true,
+            data: data
+        });
+
+    } catch (error) {
+        // Handle unexpected server errors.
+        return response.status(500).json({
+            status: false,
+            message: error.message
+        });
+    }
+};
