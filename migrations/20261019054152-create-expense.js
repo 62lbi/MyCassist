@@ -4,7 +4,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('expense', { //changed from expenses to expense manually
       expenseID: { //added this manually
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER, 
         allowNull: false,
         autoIncrement: true,
         primaryKey: true
