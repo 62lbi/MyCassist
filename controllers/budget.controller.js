@@ -338,3 +338,39 @@ exports.updateBudget = async (request, response) => {
         });
     }
 };
+
+//function to deleteBudget
+exports.deleteBudget = async (request, response) => {
+    try {
+        // 1. Get the budgetID from the URL.
+        const { id } = request.params;
+
+        // 2. Find the budget record.
+        const budget = await budgetModel.findByPk(id);
+
+        // 3. Return 404 if the budget does not exist.
+        if (!budget) {
+            return response.status(404).json({
+                status: false,
+                message: 'Data budget tidak ditemukan'
+            });
+        }
+
+        // 4. Delete the budget record.
+        await budget.destroy();
+
+        // 5. Return a success response.
+        return response.status(200).json({
+            status: true,
+            message: 'Budget berhasil dihapus'
+        });
+
+    } catch (error) {
+        // Handle unexpected server errors.
+        return response.status(500).json({
+            status: false,
+            message: error.message
+        });
+    }
+};
+
