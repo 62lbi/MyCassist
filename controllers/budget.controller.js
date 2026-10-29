@@ -220,3 +220,121 @@ exports.getAllBudget = async (request, response) => {
         });
     }
 };
+
+//Function to updateBudget
+exports.updateBudget = async (request, response) => {
+    try {
+        // 1. Get the budgetID from the URL.
+        const { id } = request.params;
+
+        // 2. Get the new percentages from the request body.
+        const { entertainment, foodNeeds, miscellaneous } = request.body;
+
+        // 3. Check whether all percentages are provided.
+        if (
+            entertainment == null ||
+            foodNeeds == null ||
+            miscellaneous == null
+        ) {
+            return response.status(400).json({
+                status: false,
+                message: 'Semua persentase wajib diisi'
+            });
+        }
+
+        // 4. Validate that all percentages are numbers between 0 and 100.
+        const percentages = [entertainment, foodNeeds, miscellaneous];
+
+        if (
+            percentages.some(value =>
+                typeof value !== 'number' ||
+                !Number.isFinite(value) ||
+                value < 0 ||
+                value > 100
+            )
+        ) {
+            return response.status(400).json({
+                status: false,
+                message: 'Setiap persentase harus berupa angka antara 0 dan 100'
+            });
+        }
+
+        // 5. Check whether the percentages add up to exactly 100.
+        const totalPercentage =
+            entertainment + foodNeeds + miscellaneous;
+
+        if (totalPercentage !== 100) {
+            return response.status(400).json({
+                status: false,
+                message: 'Total persentase harus tepat 100'
+            });
+        }
+
+        // 6. Find the budget using its ID.
+        const budget = await budgetModel.findByPk(id, {
+            include: [{
+                model: incomeModel,
+                as: 'income'
+            }]
+        });
+
+        // Return 404 if the budget does not exist.
+        if (!budget) {
+            return response.status(404).json({
+                status: false,
+                message: 'Data budget tidak ditemukan'
+            });
+        }
+
+        // 7. Update the percentages stored in the database.
+        await budget.update({
+            entertainment: entertainment,
+            foodNeeds: foodNeeds,
+            miscellaneous: miscellaneous
+        });
+
+        // 8. Get the total income linked to this budget.
+        const totalIncome = budget.income.budget;
+
+        // 9. Return the updated percentages and calculated amounts.
+        return response.status(200).json({
+            status: true,
+            message: 'Budget berhasil diubah',
+            data: {
+                budgetID: budget.budgetID,
+                incomeID: budget.incomeID,
+                month: budget.income.month,
+                year: budget.income.year,
+                budget: totalIncome,
+
+                entertainment: {
+                    percentage: budget.entertainment,
+                    amount: Math.round(
+                        totalIncome * budget.entertainment / 100
+                    )
+                },
+
+                foodNeeds: {
+                    percentage: budget.foodNeeds,
+                    amount: Math.round(
+                        totalIncome * budget.foodNeeds / 100
+                    )
+                },
+
+                miscellaneous: {
+                    percentage: budget.miscellaneous,
+                    amount: Math.round(
+                        totalIncome * budget.miscellaneous / 100
+                    )
+                }
+            }
+        });
+
+    } catch (error) {
+        // Handle unexpected server errors.
+        return response.status(500).json({
+            status: false,
+            message: error.message
+        });
+    }
+};
