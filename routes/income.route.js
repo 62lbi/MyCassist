@@ -11,5 +11,6 @@ const incomeController = require('../controllers/income.controller')
 router.get('/', incomeController.getAllIncome)
 router.post('/', incomeController.addIncome)
 router.put('/:id', incomeController.updateIncome)
+router.delete('/:id', incomeController.deleteIncome)
 
 module.exports = router; //hello future me, something new i learnt is the usage of 'router'. i usually use app in routes but now i learnt that index.js should use 'app' and for routes is router (For readability)

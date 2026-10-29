@@ -191,3 +191,39 @@ exports.updateIncome = async (request, response) => {
         });
     }
 };
+
+//function of deleteIncome
+exports.deleteIncome = async (request, response) => {
+    try {
+        // Get the incomeID from the URL.
+        const { id } = request.params;
+
+        // Find the income record that will be deleted.
+        const income = await incomeModel.findByPk(id);
+
+        // Check whether the income record exists.
+        if (!income) {
+            return response.status(404).json({
+                status: false,
+                message: 'Data income tidak ditemukan'
+            });
+        }
+
+        // Delete the income record from the database.
+        await income.destroy();
+
+        // Return a success response.
+        return response.status(200).json({
+            status: true,
+            message: 'Income berhasil dihapus'
+        });
+
+    } catch (error) {
+        // Handle unexpected server or database errors.
+        return response.status(500).json({
+            status: false,
+            message: error.message
+        });
+    }
+};
+
