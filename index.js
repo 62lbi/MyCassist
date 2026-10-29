@@ -9,10 +9,12 @@ app.use(express.json());
 // Load income routes.
 const incomeRoute = require('./routes/income.route');
 const budgetRoute = require('./routes/budget.route');
+const expenseRoute = require('./routes/expense.route')
 
 // Connect income routes to the /income path.
 app.use('/income', incomeRoute);
 app.use('/budget', budgetRoute);
+app.use('/expense', expenseRoute);
 
 // Set the port number for the server.
 const PORT = 3433;
