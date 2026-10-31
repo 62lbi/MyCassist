@@ -9,7 +9,7 @@ app.use(express.json());
 // Load income routes.
 const incomeRoute = require('./routes/income.route');
 const budgetRoute = require('./routes/budget.route');
-const expenseRoute = require('./routes/expense.route')
+const expenseRoute = require('./routes/expense.route');
 
 // Connect income routes to the /income path.
 app.use('/income', incomeRoute);
