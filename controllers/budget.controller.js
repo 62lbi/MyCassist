@@ -1,5 +1,6 @@
 const incomeModel = require('../models').income
 const budgetModel = require('../models').budget
+const expenseModel = require('../models').expense
 
 // Function to create a budget allocation
 exports.addBudget = async (request, response) => {
@@ -367,6 +368,76 @@ exports.deleteBudget = async (request, response) => {
 
     } catch (error) {
         // Handle unexpected server errors.
+        return response.status(500).json({
+            status: false,
+            message: error.message
+        });
+    }
+};
+
+// GET budget status by budget ID
+exports.getBudgetStatus = async (request, response) => {
+    try {
+        // 1. Get the budget ID from the URL.
+        const id = request.params.id;
+
+        // 2. Find the budget and its related income.
+        const budget = await budgetModel.findByPk(id, {
+            include: [{
+                model: incomeModel,
+                as: 'income'
+            }]
+        });
+
+        // 3. Check whether the budget exists.
+        if (!budget) {
+            return response.status(404).json({
+                status: false,
+                message: 'Data budget tidak ditemukan'
+            });
+        }
+
+        // 4. Calculate the total expense linked to this budget.
+        const totalExpense = await expenseModel.sum('price', {
+            where: {
+                budgetID: budget.budgetID
+            }
+        }) || 0;
+
+        // 5. Calculate the remaining money.
+        const totalIncome = budget.income.budget;
+        const remaining = totalIncome - totalExpense;
+
+        // 6. Calculate the remaining percentage.
+        const remainingPercentage = (remaining / totalIncome) * 100;
+
+        // 7. Determine the financial status.
+        let financialStatus;
+
+        if (remaining < 0) {
+            financialStatus = 'Over Budget';
+        } else if (remainingPercentage > 25) {
+            financialStatus = 'Safe';
+        } else {
+            financialStatus = 'Warning';
+        }
+
+        // 8. Return the budget status.
+        return response.status(200).json({
+            status: true,
+            data: {
+                budgetID: budget.budgetID,
+                month: budget.income.month,
+                year: budget.income.year,
+                totalIncome: totalIncome,
+                totalExpense: totalExpense,
+                remaining: remaining,
+                remainingPercentage: Number(remainingPercentage.toFixed(2)),
+                financialStatus: financialStatus
+            }
+        });
+
+    } catch (error) {
         return response.status(500).json({
             status: false,
             message: error.message
