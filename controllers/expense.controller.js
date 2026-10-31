@@ -6,12 +6,37 @@ const incomeModel = require('../models').income;
 exports.getAllExpense = async (request, response) => {
     try {
         // 1. Retrieve all expense records from the database.
-        const expenses = await expenseModel.findAll();
+        const expenses = await expenseModel.findAll({
+            include: [
+                {
+                    model: budgetModel,
+                    as: 'budget',
+                    include: [
+                        {
+                            model: incomeModel,
+                            as: 'income'
+                        }
+                    ]
+                }
+            ]
+        });
+
+        const formattedExpenses = expenses.map((expense) => {
+            return {
+                expenseID: expense.expenseID,
+                budgetID: expense.budgetID,
+                month: expense.budget.income.month,
+                year: expense.budget.income.year,
+                category: expense.category,
+                description: expense.description,
+                price: expense.price
+            };
+        });
 
         // 2. Return the retrieved records to the client.
         return response.status(200).json({
             status: true,
-            data: expenses
+            data: formattedExpenses
         });
 
     } catch (error) {
