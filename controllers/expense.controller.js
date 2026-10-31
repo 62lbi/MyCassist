@@ -350,3 +350,37 @@ exports.updateExpense = async (request, response) => {
         });
     }
 };
+
+// DELETE expense by ID
+exports.deleteExpense = async (request, response) => {
+    try {
+        // 1. Get the expense ID from the URL.
+        const id = request.params.id;
+
+        // 2. Find the expense using its ID.
+        const expense = await expenseModel.findByPk(id);
+
+        // 3. Check whether the expense exists.
+        if (!expense) {
+            return response.status(404).json({
+                status: false,
+                message: 'Data expense tidak ditemukan'
+            });
+        }
+
+        // 4. Delete the expense record.
+        await expense.destroy();
+
+        // 5. Return a success response.
+        return response.status(200).json({
+            status: true,
+            message: 'Expense berhasil dihapus'
+        });
+
+    } catch (error) {
+        return response.status(500).json({
+            status: false,
+            message: error.message
+        });
+    }
+};
