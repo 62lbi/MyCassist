@@ -1,6 +1,6 @@
 // --- Project Description
-  Project name: MyCassist (My Cash Assistant)
-  Purpose: An API that 'assists' an user's monthly income tracking, budgeting based on manual calculation from the user itself by percentage 
+  * Project name: MyCassist (My Cash Assistant)
+  * Purpose: An API that 'assists' an user's monthly income tracking, budgeting based on manual calculation from the user itself by percentage 
           (using an external ai to calculate for the budgeting is recommended for time efficiency) and an expense tracking for the user to know what they're spending on.
 
 // --- Libraries that are used for this API/project & Application
