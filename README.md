@@ -19,12 +19,13 @@
   3. Type "git clone https://github.com/62lbi/MyCassist.git" in your terminal and enter
   4. After successfully cloning, still in your terminal; type "cd MyCassist" and enter (you will know that you changed directory if your terminal has these; "/MyCassist")
   5. Within the MyCassist folder that successfuly cloned; type "npm install" in terminal, enter and wait for it to finish
-  6. Boot up laragon, and ONLY turn on Apache 2.4.66 and MySQL 8.4.3
-  7. Still in Laragon app, click 'Database' GUI inside and login in the phpMyAdmin (the default is user ROOT and no password, leave it blank)
-  8. Create a new database called 'mycassist_db'
-  9. Go back to vscode and open the terminal, still within the "/MyCassist" directory, type; "npx sequelize-cli db:migrate" (make sure that you already checked/made the config/config.json the same as below)
-  10. The server port default is '3433', you can change it by following the Environment Configuration steps
-  11. Use the terminal (within the "/MyCassist' directory, type; 'node index.js'
+  6. Still in the terminal, type; 'npm install --save-dev nodemon'
+  7. Boot up laragon, and ONLY turn on Apache 2.4.66 and MySQL 8.4.3
+  8. Still in Laragon app, click 'Database' GUI inside and login in the phpMyAdmin (the default is user ROOT and no password, leave it blank)
+  9. Create a new database called 'mycassist_db'
+  10. Go back to vscode and open the terminal, still within the "/MyCassist" directory, type; "npx sequelize-cli db:migrate" (make sure that you already checked/made the config/config.json the same as below)
+  11. The server port default is '3433', you can change it by following the Environment Configuration steps
+  12. Use the terminal (within the "/MyCassist' directory, type; 'node index.js'
 
   
 // --- Environment Configuration
