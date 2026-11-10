@@ -3,6 +3,7 @@ const budgetModel = require('../models').budget
 const expenseModel = require('../models').expense
 
 // Function to create a budget allocation
+
 exports.addBudget = async (request, response) => {
     try {
         // 1. Get the data sent by the user.
@@ -18,7 +19,7 @@ exports.addBudget = async (request, response) => {
         ) {
             return response.status(400).json({
                 status: false,
-                message: 'Bulan, tahun, dan semua persentase wajib diisi'
+                message: 'Bulan, tahun, dan semua nominal budget wajib diisi'
             });
         }
 
@@ -47,35 +48,27 @@ exports.addBudget = async (request, response) => {
             });
         }
 
-        // 5. Make sure all percentages are valid numbers.
-        const percentages = [entertainment, foodNeeds, miscellaneous];
+        // 5. Validate that all budget amounts are non-negative integers.
+        const budgetAmounts = [
+            entertainment,
+            foodNeeds,
+            miscellaneous
+        ];
 
         if (
-            percentages.some(value =>
+            budgetAmounts.some(value =>
                 typeof value !== 'number' ||
-                !Number.isFinite(value) ||
-                value < 0 ||
-                value > 100
+                !Number.isSafeInteger(value) ||
+                value < 0
             )
         ) {
             return response.status(400).json({
                 status: false,
-                message: 'Setiap persentase harus berupa angka antara 0 dan 100'
+                message: 'Setiap nominal budget harus berupa bilangan bulat positif atau nol'
             });
         }
 
-        // 6. Check whether the percentages add up to exactly 100.
-        const totalPercentage =
-            entertainment + foodNeeds + miscellaneous;
-
-        if (totalPercentage !== 100) {
-            return response.status(400).json({
-                status: false,
-                message: 'Total persentase harus tepat 100'
-            });
-        }
-
-        // 7. Find the income for the requested month and year.
+        // 6. Find the income for the requested month and year.
         const income = await incomeModel.findOne({
             where: {
                 month: month,
@@ -91,7 +84,21 @@ exports.addBudget = async (request, response) => {
             });
         }
 
-        // 8. Check whether this income already has a budget allocation.
+        // 7. Calculate the total allocated budget.
+        const totalBudget =
+            entertainment +
+            foodNeeds +
+            miscellaneous;
+
+        // 8. Make sure the total budget does not exceed the income.
+        if (totalBudget > income.budget) {
+            return response.status(400).json({
+                status: false,
+                message: 'Total alokasi budget tidak boleh melebihi income'
+            });
+        }
+
+        // 9. Check whether this income already has a budget allocation.
         const existingBudget = await budgetModel.findOne({
             where: {
                 incomeID: income.incomeID
@@ -105,7 +112,10 @@ exports.addBudget = async (request, response) => {
             });
         }
 
-        // 9. Save the percentages in the database.
+        // 10. Calculate the remaining money.
+        const remainingMoney = income.budget - totalBudget;
+
+        // 11. Save the nominal budget amounts in the database.
         const newBudget = await budgetModel.create({
             incomeID: income.incomeID,
             entertainment: entertainment,
@@ -113,20 +123,7 @@ exports.addBudget = async (request, response) => {
             miscellaneous: miscellaneous
         });
 
-        // 10. Calculate the money allocated to each category.
-        const totalIncome = income.budget;
-
-        // Round to the nearest whole rupiah.
-        const entertainmentAmount =
-            Math.round(totalIncome * entertainment / 100);
-
-        const foodNeedsAmount =
-            Math.round(totalIncome * foodNeeds / 100);
-
-        const miscellaneousAmount =
-            Math.round(totalIncome * miscellaneous / 100);
-
-        // 11. Return the budget allocation and calculated amounts.
+        // 12. Return the budget allocation and remaining money.
         return response.status(201).json({
             status: true,
             message: 'Budget berhasil dibuat',
@@ -135,19 +132,12 @@ exports.addBudget = async (request, response) => {
                 incomeID: income.incomeID,
                 month: income.month,
                 year: income.year,
-                budget: totalIncome,
-                entertainment: {
-                    percentage: entertainment,
-                    amount: entertainmentAmount
-                },
-                foodNeeds: {
-                    percentage: foodNeeds,
-                    amount: foodNeedsAmount
-                },
-                miscellaneous: {
-                    percentage: miscellaneous,
-                    amount: miscellaneousAmount
-                }
+                totalIncome: income.budget,
+                totalBudget: totalBudget,
+                entertainment: entertainment,
+                foodNeeds: foodNeeds,
+                miscellaneous: miscellaneous,
+                remainingMoney: remainingMoney
             }
         });
 
@@ -159,6 +149,7 @@ exports.addBudget = async (request, response) => {
         });
     }
 };
+
 
 // Function to getAllBudget
 exports.getAllBudget = async (request, response) => {
