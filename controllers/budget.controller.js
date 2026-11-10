@@ -164,8 +164,18 @@ exports.getAllBudget = async (request, response) => {
 
         // 2. Convert each budget record into the response format.
         const data = budgets.map((item) => {
+
             // Get the total income linked to this budget.
             const totalIncome = item.income.budget;
+
+            // Calculate the total allocated budget.
+            const totalBudget =
+                item.entertainment +
+                item.foodNeeds +
+                item.miscellaneous;
+
+            // Calculate the remaining money.
+            const remainingMoney = totalIncome - totalBudget;
 
             // Return the budget details and calculated amounts.
             return {
@@ -173,28 +183,12 @@ exports.getAllBudget = async (request, response) => {
                 incomeID: item.incomeID,
                 month: item.income.month,
                 year: item.income.year,
-                budget: totalIncome,
-
-                entertainment: {
-                    percentage: item.entertainment,
-                    amount: Math.round(
-                        totalIncome * item.entertainment / 100
-                    )
-                },
-
-                foodNeeds: {
-                    percentage: item.foodNeeds,
-                    amount: Math.round(
-                        totalIncome * item.foodNeeds / 100
-                    )
-                },
-
-                miscellaneous: {
-                    percentage: item.miscellaneous,
-                    amount: Math.round(
-                        totalIncome * item.miscellaneous / 100
-                    )
-                }
+                totalIncome: totalIncome,
+                totalBudget: totalBudget,
+                entertainment: item.entertainment,
+                foodNeeds: item.foodNeeds,
+                miscellaneous: item.miscellaneous,
+                remainingMoney: remainingMoney
             };
         });
 
@@ -212,6 +206,7 @@ exports.getAllBudget = async (request, response) => {
         });
     }
 };
+
 
 //Function to updateBudget
 exports.updateBudget = async (request, response) => {
