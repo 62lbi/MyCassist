@@ -9,5 +9,6 @@ const savingController = require(`../controllers/saving.controller`)
 
 //use routes to refer the functions from controller
 router.get(`/`, savingController.getAllSaving)
+router.get(`/:id`, savingController.getSavingById)
 
 module.exports = router;
