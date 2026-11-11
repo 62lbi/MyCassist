@@ -209,15 +209,16 @@ exports.getAllBudget = async (request, response) => {
 
 
 //Function to updateBudget
+
 exports.updateBudget = async (request, response) => {
     try {
-        // 1. Get the budgetID from the URL.
+        // 1. Get the budget ID from the URL parameter.
         const { id } = request.params;
 
-        // 2. Get the new percentages from the request body.
+        // 2. Get the updated budget amounts from the request body.
         const { entertainment, foodNeeds, miscellaneous } = request.body;
 
-        // 3. Check whether all percentages are provided.
+        // 3. Validate that all required fields are provided.
         if (
             entertainment == null ||
             foodNeeds == null ||
@@ -225,39 +226,27 @@ exports.updateBudget = async (request, response) => {
         ) {
             return response.status(400).json({
                 status: false,
-                message: 'Semua persentase wajib diisi'
+                message: "Semua kategori budget harus diisi"
             });
         }
 
-        // 4. Validate that all percentages are numbers between 0 and 100.
-        const percentages = [entertainment, foodNeeds, miscellaneous];
+        // 4. Validate that all budget amounts are non-negative integers.
+        const amounts = [entertainment, foodNeeds, miscellaneous];
 
-        if (
-            percentages.some(value =>
-                typeof value !== 'number' ||
-                !Number.isFinite(value) ||
-                value < 0 ||
-                value > 100
-            )
-        ) {
+        const validAmounts = amounts.every((amount) =>
+            typeof amount === 'number' &&
+            Number.isSafeInteger(amount) &&
+            amount >= 0
+        );
+
+        if (!validAmounts) {
             return response.status(400).json({
                 status: false,
-                message: 'Setiap persentase harus berupa angka antara 0 dan 100'
+                message: "Jumlah budget harus berupa angka bulat dan tidak boleh negatif"
             });
         }
 
-        // 5. Check whether the percentages add up to exactly 100.
-        const totalPercentage =
-            entertainment + foodNeeds + miscellaneous;
-
-        if (totalPercentage !== 100) {
-            return response.status(400).json({
-                status: false,
-                message: 'Total persentase harus tepat 100'
-            });
-        }
-
-        // 6. Find the budget using its ID.
+        // 5. Find the budget record and its related income.
         const budget = await budgetModel.findByPk(id, {
             include: [{
                 model: incomeModel,
@@ -265,55 +254,55 @@ exports.updateBudget = async (request, response) => {
             }]
         });
 
-        // Return 404 if the budget does not exist.
         if (!budget) {
             return response.status(404).json({
                 status: false,
-                message: 'Data budget tidak ditemukan'
+                message: "Data budget tidak ditemukan"
             });
         }
 
-        // 7. Update the percentages stored in the database.
+        // 6. Get the total income linked to this budget.
+        const totalIncome = budget.income.budget;
+
+        // 7. Calculate the total updated budget allocation.
+        const totalBudget =
+            entertainment +
+            foodNeeds +
+            miscellaneous;
+
+        // 8. Make sure the allocated budget does not exceed the income.
+        if (totalBudget > totalIncome) {
+            return response.status(400).json({
+                status: false,
+                message: "Total budget tidak boleh melebihi pemasukan"
+            });
+        }
+
+        // 9. Update the budget amounts in the database.
         await budget.update({
             entertainment: entertainment,
             foodNeeds: foodNeeds,
             miscellaneous: miscellaneous
         });
 
-        // 8. Get the total income linked to this budget.
-        const totalIncome = budget.income.budget;
+        // 10. Calculate the remaining unallocated money.
+        const remainingMoney = totalIncome - totalBudget;
 
-        // 9. Return the updated percentages and calculated amounts.
+        // 11. Return the updated budget data.
         return response.status(200).json({
             status: true,
-            message: 'Budget berhasil diubah',
+            message: "Budget berhasil diperbarui",
             data: {
                 budgetID: budget.budgetID,
                 incomeID: budget.incomeID,
                 month: budget.income.month,
                 year: budget.income.year,
-                budget: totalIncome,
-
-                entertainment: {
-                    percentage: budget.entertainment,
-                    amount: Math.round(
-                        totalIncome * budget.entertainment / 100
-                    )
-                },
-
-                foodNeeds: {
-                    percentage: budget.foodNeeds,
-                    amount: Math.round(
-                        totalIncome * budget.foodNeeds / 100
-                    )
-                },
-
-                miscellaneous: {
-                    percentage: budget.miscellaneous,
-                    amount: Math.round(
-                        totalIncome * budget.miscellaneous / 100
-                    )
-                }
+                totalIncome: totalIncome,
+                totalBudget: totalBudget,
+                entertainment: entertainment,
+                foodNeeds: foodNeeds,
+                miscellaneous: miscellaneous,
+                remainingMoney: remainingMoney
             }
         });
 
