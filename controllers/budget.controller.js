@@ -1,6 +1,7 @@
 const incomeModel = require('../models').income
 const budgetModel = require('../models').budget
 const expenseModel = require('../models').expense
+const savingModel = require('../models').saving
 
 // Function to create a budget allocation
 
@@ -123,7 +124,13 @@ exports.addBudget = async (request, response) => {
             miscellaneous: miscellaneous
         });
 
-        // 12. Return the budget allocation and remaining money.
+        // 12. Save the remaining money as a saving record.
+        await savingModel.create({
+            budgetID: newBudget.budgetID,
+            savingMoney: remainingMoney
+        });
+
+        // 13. Return the budget allocation and remaining money.
         return response.status(201).json({
             status: true,
             message: 'Budget berhasil dibuat',
@@ -285,10 +292,24 @@ exports.updateBudget = async (request, response) => {
             miscellaneous: miscellaneous
         });
 
-        // 10. Calculate the remaining unallocated money.
+        // 10. Find the saving record associated with this budget.
+        const saving = await savingModel.findOne({
+            where: {
+                budgetID: budget.budgetID
+            }
+        });
+
+        // 11. Update the existing saving record.
+        if (saving) {
+            await saving.update({
+                savingMoney: remainingMoney
+            });
+        }
+
+        // 12. Calculate the remaining unallocated money.
         const remainingMoney = totalIncome - totalBudget;
 
-        // 11. Return the updated budget data.
+        // 13. Return the updated budget data.
         return response.status(200).json({
             status: true,
             message: "Budget berhasil diperbarui",
