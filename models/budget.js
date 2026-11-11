@@ -16,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
         as: 'expenses', // why is it expenses and not expense?
         onDelete: 'CASCADE'
       });
+      budget.hasOne(models.saving, { //added this manually, one to one relation (revisi pertama)
+        foreignKey: 'budgetID',
+        as: 'saving',
+        onDelete: 'CASCADE'
+      });
     }
   }
   budget.init({
