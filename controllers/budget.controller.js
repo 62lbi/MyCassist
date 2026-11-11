@@ -285,7 +285,10 @@ exports.updateBudget = async (request, response) => {
             });
         }
 
-        // 9. Update the budget amounts in the database.
+        // 9. Calculate the remaining unallocated money.
+        const remainingMoney = totalIncome - totalBudget;
+
+        // 10. Update the budget amounts in the database.
         await budget.update({
             entertainment: entertainment,
             foodNeeds: foodNeeds,
@@ -305,10 +308,7 @@ exports.updateBudget = async (request, response) => {
                 savingMoney: remainingMoney
             });
         }
-
-        // 12. Calculate the remaining unallocated money.
-        const remainingMoney = totalIncome - totalBudget;
-
+        
         // 13. Return the updated budget data.
         return response.status(200).json({
             status: true,
